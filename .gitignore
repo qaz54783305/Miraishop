@@ -61,3 +61,5 @@ ehthumbs.db
 
 # Windows shortcuts
 *.lnk
+
+*vite
