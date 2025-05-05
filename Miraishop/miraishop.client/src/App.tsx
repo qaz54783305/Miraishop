@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import './App.css';
+import { API_BASE_URL } from './config';
 
 // 定義 HelloWorld 回應的介面
 interface HelloResponse {
@@ -64,7 +65,7 @@ function App() {
         if (name.trim() === '') return;
         
         try {
-            const response = await fetch('https://localhost:44341/helloworld', {
+            const response = await fetch(`${API_BASE_URL}/helloworld`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -134,7 +135,7 @@ function App() {
     async function fetchHelloWorld() {
         try {
             setLoading(true);
-            const response = await fetch('https://localhost:44341/helloworld');
+            const response = await fetch(`${API_BASE_URL}/helloworld`);
             if (response.ok) {
                 const data: HelloResponse = await response.json();
                 setHelloMessage(`${data.message} (伺服器時間: ${new Date(data.timestamp).toLocaleString()})`); 
@@ -151,7 +152,7 @@ function App() {
 
     // 原本的天氣預報資料獲取函數
     async function populateWeatherData() {
-        const response = await fetch('https://localhost:44341/weatherforecast');
+        const response = await fetch(`${API_BASE_URL}/weatherforecast`);
         if (response.ok) {
             const data = await response.json();
             setForecasts(data);
