@@ -18,12 +18,12 @@
         </svg>
         管理員後台
       </a>
-      <button class="cart-btn">
+      <button class="cart-btn" type="button" (click)="openCart(cartDialog)" [attr.aria-label]="'開啟購物車，共 ' + cartCount + ' 件商品'" aria-haspopup="dialog">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
             d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2 9m12-9l2 9M9 21a1 1 0 100-2 1 1 0 000 2zm6 0a1 1 0 100-2 1 1 0 000 2z"/>
         </svg>
-        <span class="cart-count">3</span>
+        <span class="cart-count" *ngIf="cartCount > 0">{{ cartCount }}</span>
       </button>
       <button class="logout-btn" (click)="logout()">登出</button>
     </div>
@@ -92,13 +92,15 @@
     <!-- Product Grid -->
     <section class="products">
       <h2 class="section-title">熱門商品</h2>
+      <p class="demo-note">目前為示意商品，購物車僅供操作預覽，重新整理後會清空。</p>
+      <p class="cart-notice" role="status" aria-live="polite">{{ cartMessage }}</p>
       <div class="product-grid">
-        <div class="product-card" *ngFor="let p of [1,2,3,4,5,6,7,8]">
+        <div class="product-card" *ngFor="let p of products">
           <div class="product-img"></div>
           <div class="product-info">
-            <p class="product-name">商品名稱 {{ p }}</p>
-            <p class="product-price">${{ p * 199 }}</p>
-            <button class="add-cart-btn">加入購物車</button>
+            <p class="product-name">{{ p.name }}</p>
+            <p class="product-price">NT$ {{ p.price | number:'1.0-0' }}</p>
+            <button class="add-cart-btn" type="button" (click)="addToCart(p)" [attr.aria-label]="'加入購物車：' + p.name">＋ 加入購物車</button>
           </div>
         </div>
       </div>
@@ -133,3 +135,37 @@
   </div>
   <div class="footer-bottom">© 2025 MiraiShop. All rights reserved.</div>
 </footer>
+
+<dialog #cartDialog class="cart-dialog" aria-labelledby="cart-title" (close)="cartOpen = false" (click)="$event.target === cartDialog && closeCart(cartDialog)">
+  <div class="cart-panel">
+    <header class="cart-heading">
+      <div><h2 id="cart-title">我的購物車</h2><p>{{ cartCount }} 件商品</p></div>
+      <button class="icon-button" type="button" aria-label="關閉購物車" (click)="closeCart(cartDialog)">✕</button>
+    </header>
+    <div class="cart-empty" *ngIf="cartItems.length === 0">
+      <div class="empty-symbol" aria-hidden="true">＋</div>
+      <h3>購物車還是空的</h3><p>挑選喜歡的商品，加入你的購物車吧。</p>
+      <button class="primary-button" type="button" (click)="closeCart(cartDialog)">繼續逛逛</button>
+    </div>
+    <div class="cart-list" *ngIf="cartItems.length > 0">
+      <article class="cart-item" *ngFor="let item of cartItems">
+        <div class="cart-item-image" aria-hidden="true">M</div>
+        <div class="cart-item-detail">
+          <h3>{{ item.name }}</h3><p>NT$ {{ item.price | number:'1.0-0' }} / 件</p>
+          <div class="quantity-control" role="group" [attr.aria-label]="item.name + ' 數量'">
+            <button type="button" [disabled]="item.quantity <= 1" (click)="changeQuantity(item.id, -1)" [attr.aria-label]="'減少 ' + item.name + ' 數量'">−</button>
+            <span aria-live="polite">{{ item.quantity }}</span>
+            <button type="button" [disabled]="item.quantity >= 99" (click)="changeQuantity(item.id, 1)" [attr.aria-label]="'增加 ' + item.name + ' 數量'">＋</button>
+          </div>
+        </div>
+        <div class="cart-item-end"><strong>NT$ {{ item.price * item.quantity | number:'1.0-0' }}</strong><button class="remove-button" type="button" (click)="removeItem(item.id)" [attr.aria-label]="'移除 ' + item.name">移除</button></div>
+      </article>
+    </div>
+    <footer class="cart-summary" *ngIf="cartItems.length > 0">
+      <div><span>商品小計</span><strong aria-live="polite">NT$ {{ cartTotal | number:'1.0-0' }}</strong></div>
+      <p>尚未包含運費及折扣。實際金額將於結帳時確認。</p>
+      <button class="primary-button" type="button" (click)="closeCart(cartDialog)">繼續選購</button>
+      <p class="preview-note">購物車互動預覽 · 尚未連接訂單與付款功能</p>
+    </footer>
+  </div>
+</dialog>

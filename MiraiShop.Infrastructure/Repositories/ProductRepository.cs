@@ -17,7 +17,7 @@ public class ProductRepository : IProductRepository
 
     public Task<Product?> GetByIdAsync(Guid id)
     {
-        return Task.FromResult(new Product());
+        return _context.Products.FirstOrDefaultAsync(product => product.Id == id);
     }
 
     public Task<IEnumerable<Product>> GetAllAsync()

@@ -12,9 +12,36 @@ public class MiraiShopDbContext : DbContext
     public DbSet<Order> Orders => Set<Order>();
     public DbSet<Category> Categories => Set<Category>();
     public DbSet<Product> Products => Set<Product>();
+    public DbSet<Cart> Carts => Set<Cart>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<Cart>(entity =>
+        {
+            entity.ToTable("Cart", table =>
+                table.HasCheckConstraint("CK_Cart_Quantity_Positive", "[Quantity] > 0"));
+
+            // 同一會員的同一商品只保留一筆購物車明細。
+            entity.HasKey(c => new { c.MemberId, c.ProductId });
+
+            entity.Property(c => c.MemberId).ValueGeneratedNever();
+            entity.Property(c => c.ProductId).ValueGeneratedNever();
+            entity.Property(c => c.Quantity).IsRequired();
+            entity.Property(c => c.UpdatedAt).IsRequired();
+
+            entity.HasOne<Member>()
+                  .WithMany()
+                  .HasForeignKey(c => c.MemberId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne<Product>()
+                  .WithMany()
+                  .HasForeignKey(c => c.ProductId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasIndex(c => c.ProductId);
+        });
+
         modelBuilder.Entity<Member>(entity =>
         {
             entity.ToTable("Member");
